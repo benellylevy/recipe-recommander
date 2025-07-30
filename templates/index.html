@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recipe Recommender</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .spell-icon {
+      position: relative;
+      display: inline-block;
+      cursor: default;
+    }
+    .spell-icon[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      background-color: #333;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      top: -30px;
+      left: 0;
+      white-space: nowrap;
+      font-size: 0.85em;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .fridge {
+      max-width: 620px;
+      margin: 30px auto;
+      padding: 25px;
+      background: #f4f9f9;
+      border: 8px solid #cfd8dc;
+      border-radius: 20px;
+      box-shadow: inset 0 0 20px rgba(200, 200, 200, 0.4), 0 4px 10px rgba(0,0,0,0.1);
+      background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='%23e0f7fa' fill-opacity='0.3'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+    }
+    .inner-box {
+      background: linear-gradient(145deg, #ffffff, #e0f7fa);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    body, h1, form, fieldset, ul {
+      text-align: center;
+    }
+    h1 {
+      color: #222;
+      font-family: "Helvetica Neue", sans-serif;
+      font-size: 1.8em;
+      margin-bottom: 0.5em;
+    }
+    .allergy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 18px;
+      margin-bottom: 8px;
+      max-width: 400px;
+      justify-content: center;
+      align-items: center;
+      text-align: left;
+    }
+    .allergy-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .allergy-icon {
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="fridge">
+  <!-- פתיח כללי -->
+  <a href="/favorites">❤️ Favorite Recipes</a><br><br>
+  <h1>Recipe Recommender</h1>
+
+  <div class="inner-box">
+  <!-- Search form starts here - user inputs ingredients and filters -->
+  <form method="POST">
+    <!-- 🧄 Ingredient input fields - user enters 3 ingredients -->
+    <label for="ingredient1">Enter 3 ingredients:</label><br>
+    <div class="input-group">
+      <span id="icon-ingredient1" class="spell-icon"></span>
+      <input type="text" name="ingredient1" id="ingredient1" class="spell-check" placeholder="e.g. tomato" required onblur="checkSpelling(this)">
+    </div>
+    <div class="input-group">
+      <span id="icon-ingredient2" class="spell-icon"></span>
+      <input type="text" name="ingredient2" id="ingredient2" class="spell-check" placeholder="e.g. onion" required onblur="checkSpelling(this)">
+    </div>
+    <div class="input-group">
+      <span id="icon-ingredient3" class="spell-icon"></span>
+      <input type="text" name="ingredient3" id="ingredient3" class="spell-check" placeholder="e.g. pasta" required onblur="checkSpelling(this)">
+    </div>
+    <br>
+
+    <!-- Filters section - diet, cuisine, intolerances -->
+    <fieldset style="border: 1px solid #ccc; padding: 10px; border-radius: 6px;">
+      <legend>Filters</legend>
+
+      <!-- Diet selection radios -->
+      <p>Select a diet:</p>
+      {% set diets = {
+        '': 'Any',
+        'vegan': 'Vegan',
+        'vegetarian': 'Vegetarian',
+        'pescetarian': 'Pescetarian',
+        'paleo': 'Paleo',
+        'ketogenic': 'Ketogenic',
+        'whole30': 'Whole30'
+      } %}
+      {% for value, label in diets.items() %}
+        <label style="margin-right: 12px;">
+          <input type="radio" name="diet" value="{{ value }}" {% if request.form.get('diet') == value %}checked{% endif %}>
+          {{ label }}
+        </label>
+      {% endfor %}
+      <br><br>
+
+      <!-- Cuisine dropdown -->
+      <label for="cuisine">Preferred cuisine:</label><br>
+      <select name="cuisine" id="cuisine">
+        <option value="" {% if request.form.get('cuisine') == '' %}selected{% endif %}>Any</option>
+        <option value="Indian" {% if request.form.get('cuisine') == 'Indian' %}selected{% endif %}>Indian</option>
+        <option value="Japanese" {% if request.form.get('cuisine') == 'Japanese' %}selected{% endif %}>Japanese</option>
+        <option value="Italian" {% if request.form.get('cuisine') == 'Italian' %}selected{% endif %}>Italian</option>
+        <option value="Mexican" {% if request.form.get('cuisine') == 'Mexican' %}selected{% endif %}>Mexican</option>
+        <option value="Mediterranean" {% if request.form.get('cuisine') == 'Mediterranean' %}selected{% endif %}>Mediterranean</option>
+      </select>
+
+      <br>
+      <!-- Intolerances checkboxes -->
+      <label>Intolerances:</label><br>
+      <style>
+        .allergy-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px 18px;
+          margin-bottom: 8px;
+          max-width: 400px;
+          justify-content: center;
+          align-items: center;
+          text-align: left;
+        }
+        .allergy-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .allergy-icon {
+          font-size: 1.2em;
+        }
+      </style>
+      <div class="allergy-grid">
+      {% set allergy_icons = {
+        'dairy': '🥛',
+        'egg': '🥚',
+        'gluten': '🌾',
+        'peanut': '🥜',
+        'seafood': '🦐',
+        'sesame': '🌻',
+        'soy': '🌱',
+        'sulfite': '🧪',
+        'tree nut': '🌰',
+        'wheat': '🍞'
+      } %}
+      {% for item in ['dairy', 'egg', 'gluten', 'peanut', 'seafood', 'sesame', 'soy', 'sulfite', 'tree nut', 'wheat'] %}
+        <div class="allergy-item">
+          <span class="allergy-icon" title="{{ item|capitalize }}">{{ allergy_icons[item] }}</span>
+          <input type="checkbox" name="intolerances" value="{{ item }}" {% if item in request.form.getlist('intolerances') %}checked{% endif %} id="allergy-{{ item }}">
+          <label for="allergy-{{ item }}">{{ item | capitalize }}</label>
+        </div>
+      {% endfor %}
+      </div>
+    </fieldset>
+    <br>
+    <!-- Submit button for the form -->
+    <button type="submit">Get Recipes</button>
+  </form>
+  </div>
+
+  {% if suggestions and request.method == 'POST' %}
+    <!-- Showing spelling suggestions if there are any -->
+    <h3>🧐 Did you mean:</h3>
+    <form method="POST">
+      {% for name, pair in suggestions.items() %}
+        <p>
+          <strong>{{ pair.original }}</strong> → 
+          <input type="hidden" name="{{ name }}" value="{{ pair.corrected }}">
+          <strong style="color:green">{{ pair.corrected }}</strong>
+        </p>
+      {% endfor %}
+      <br>
+      <!-- Keep other form fields from previous submission -->
+      <input type="hidden" name="vegan" value="{{ request.form.get('vegan') }}">
+      <input type="hidden" name="cuisine" value="{{ request.form.get('cuisine') }}">
+      {% for item in request.form.getlist('intolerances') %}
+        <input type="hidden" name="intolerances" value="{{ item }}">
+      {% endfor %}
+      <button type="submit">✅ Yes, use corrected ingredients</button>
+      <br>
+      <button type="button" onclick="window.history.back()">❌ No, let me fix it</button>
+    </form>
+    <hr>
+  {% endif %}
+
+  <!-- Displaying recipe results -->
+  {% if recipes and recipes|length > 0 %}
+    <h2>🍽️ Top Recipe Matches:</h2>
+    <ul>
+      {% for recipe in recipes %}
+        <li>
+          <strong>{{ recipe.title }}</strong><br>
+          <img src="{{ recipe.image }}" width="200"><br>
+          <div class="actions-row">
+            <a href="{{ recipe.sourceUrl }}" target="_blank">View Recipe</a>
+            <!-- Add to favorites button if not already on favorites page -->
+            {% if request.path != '/favorites' %}
+              <form action="/save_favorite" method="post" style="display:inline;">
+                <input type="hidden" name="title" value="{{ recipe.title }}">
+                <input type="hidden" name="image" value="{{ recipe.image }}">
+                <input type="hidden" name="url" value="{{ recipe.sourceUrl }}">
+                <button type="submit" class="btn-fav">➕ Add to Favorites</button>
+              </form>
+            {% endif %}
+          </div>
+          <!-- Remove from favorites button if on favorites page -->
+          {% if request.path == '/favorites' %}
+            <form action="/remove_favorite" method="post" style="display:inline;">
+              <input type="hidden" name="title" value="{{ recipe.title }}">
+              <button type="submit">💔 Remove from Favorites</button>
+            </form>
+          {% endif %}
+ 
+          <!-- Details for full ingredient list -->
+          {% if recipe.extendedIngredients %}
+            <details>
+              <summary>📋 Full Ingredient List</summary>
+              <ul>
+                {% for ing in recipe.extendedIngredients %}
+                  <li>{{ ing.amount }} {{ ing.unit }} {{ ing.name }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+          {% endif %}
+          <!-- Ingredients list or 'Not available' message -->
+          <p><strong>Ingredients:</strong></p>
+          {% if recipe.extendedIngredients and recipe.extendedIngredients|length > 0 %}
+            <ul>
+              {% for ing in recipe.extendedIngredients %}
+                <li>{{ ing.amount }} {{ ing.unit }} {{ ing.name }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p><em>Not available.</em></p>
+          {% endif %}
+        </li><br>
+      {% endfor %}
+    </ul>
+  {% elif recipes is not none and recipes|length == 0 %}
+    <p>😔 No matching recipes were found. Try adjusting your filters or ingredients.</p>
+  {% endif %}
+<script>
+function checkSpelling(inputElem) {
+  const ingredient = inputElem.value.trim();
+  const iconSpan = document.getElementById('icon-' + inputElem.id);
+  if (!ingredient) {
+    iconSpan.textContent = '';
+    return;
+  }
+  fetch('/check_spelling', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ ingredient: ingredient })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.correct) {
+      iconSpan.textContent = '✅';
+      iconSpan.title = 'Looks good!';
+      iconSpan.style.color = 'green';
+    } else if (data.suggestion) {
+      iconSpan.textContent = '⚠️';
+      iconSpan.title = 'Did you mean: ' + data.suggestion + '?';
+      iconSpan.style.color = 'orange';
+    } else {
+      iconSpan.textContent = '❌';
+      iconSpan.title = 'Unknown ingredient';
+      iconSpan.style.color = 'red';
+    }
+  })
+  .catch(() => {
+    iconSpan.textContent = '';
+  });
+}
+</script>
+  </div>
+</body>
+</html>

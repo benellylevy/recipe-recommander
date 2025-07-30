@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Page title -->
+    <title>Favorite Recipes</title>
+</head>
+<body>
+    <!-- Main heading of the page -->
+    <h1>❤️ Favorite Recipes</h1>
+    <!-- Link back to the home page -->
+    <a href="/">← Back to Home</a>
+    <!-- Looping through the list of saved favorite recipes -->
+    <ul>
+      {% for recipe in favorites %}
+        <!-- Displaying each favorite recipe details -->
+        <li>
+            <strong>{{ recipe.title }}</strong><br>
+            <img src="{{ recipe.image }}" width="200"><br>
+            <a href="{{ recipe.sourceUrl }}" target="_blank">View Recipe</a><br>
+            <form action="/remove_favorite" method="POST" style="display:inline;">
+                <input type="hidden" name="recipe_id" value="{{ recipe.id }}">
+                <button type="submit">💔 Remove</button>
+            </form>
+        </li><br>
+      {% endfor %}
+    </ul>
+</body>
+</html>
