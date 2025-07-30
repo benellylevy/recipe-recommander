@@ -1,88 +1,65 @@
-# 🍲 Recipe Recommender Web App
+# Recipe Recommender – Smart Cooking From Your Fridge
 
-An intelligent recipe suggestion tool that matches your mood, your pantry and your diet.
+This project started with a simple question: what if my fridge could help me decide what to cook? I wanted to build something real, not just a toy. So I made this. Sometimes, you open the fridge and have no idea what to cook. This app helps you solve that by suggesting recipes based on what you actually have in your kitchen.
 
------
+Here’s how it works: you enter three ingredients you have on hand, choose your diet preferences (like vegan or not), select any food allergies or intolerances you have, and pick your favorite cooking style or cuisine. The app then talks to the Spoonacular API to find recipes that match your inputs.
 
-## What does this project do?
+One cool feature is real-time spell checking and correction for your ingredients, so you don’t have to worry about typos messing up your search.
 
-The Recipe Recommender is a user-friendly web application that helps users discover creative and personalized recipe suggestions based on:
-	•	✅ Three fresh ingredients the user currently has
-	•	✅ Dietary preferences (e.g. Vegan)
-	•	✅ Preferred cuisine (e.g. Japanese, Italian, Indian)
-	•	✅ Dietary intolerances (e.g. Gluten, Dairy, Peanut)
+The app fetches a list of recipes and ranks them by how many ingredients you already have, making it easier for you to cook without extra shopping.
 
-The app connects in real-time to a public recipe API (Spoonacular) and fetches 5–10 relevant recipe candidates. It then intelligently filters and ranks them according to how many of the recipe’s required ingredients the user already has at home.
+## How to install and run
 
-Users receive a list of top 3 matching recipes — each with a preview image, link to instructions, and an ingredient breakdown:
-✔️ What you already have, ❌ what you’re missing.
-
-Users can save favorites to a persistent list and remove them later.
-
-----
-
-## 📥 What input does it expect?
-
-The user provides:
-	•	Three manually typed ingredients (e.g. "tomato", "pasta", "onion")
-	•	Dietary preference (checkbox: Vegan / Not vegan)
-	•	Preferred cuisine (dropdown: e.g. “Japanese”, “Mexican”)
-	•	Dietary intolerances (checkbox list: e.g. gluten, dairy, soy)
-
-All inputs are collected via an elegant and responsive web form.
-
-----
-
-## 📤 What output does it return?
-
-After submitting the form, the user receives:
-	•	A ranked list of 3 recipe suggestions
-	•	✅ Title, image, external recipe link
-	•	Option to add recipes to “Favorites”
-	•	Option to remove recipes from “Favorites”
-	•	Separate page to browse favorite recipes
-
-
-## Technicalities: How to run it
-
-
-## ⚙️ How to run the project locally
+### Prerequisites:
+- Python 3.7+
+- API Key from [Spoonacular](https://spoonacular.com/food-api)
 
 1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/recipe-recommender.git
-cd recipe-recommender
-```
+   ```
+   git clone https://github.com/yourusername/recipe-recommender.git
+   cd recipe-recommender
+   ```
 
 2. Create and activate a virtual environment:
+   ```
+   python3 -m venv venv
+   source venv/bin/activate    # On Windows: venv\Scripts\activate
+   ```
 
-```bash
-python3 -m venv venv
-source venv/bin/activate    # on Windows: venv\Scripts\activate
-```
+3. Install the dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-3. Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Create a `.env` file in the project root and add your Spoonacular API key:
-
-```
-SPOONACULAR_API_KEY=your_api_key_here
-```
+4. Create a `.env` file in the project folder and add your Spoonacular API key:
+   ```
+   SPOONACULAR_API_KEY=your_api_key_here
+   ```
 
 5. Run the app:
+   ```
+   python app.py
+   ```
 
-```bash
-python app.py
-```
+6. Open your browser and go to [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-Then go to [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+## 🖼️ Screenshot
 
-## 🎓 Academic note
+Here’s how the app looks when running locally:
 
-This project was developed as part of 
-Instructor: Liron Shapira
+![App Screenshot](static/screenshot.png)
+
+
+
+## What’s next?
+
+- Connecting the app directly to your smart fridge to automatically know what’s inside  
+- Using your phone camera to scan ingredients and add them to your list  
+- Smarter ingredient recognition with Hebrew and English support  
+- Personalized recipe recommendations based on your cooking habits  
+- Exporting shopping lists for missing ingredients
+
+This project is a step towards making home cooking simpler and more fun for everyone. Enjoy cooking!
+
+---
+*Built as part of the Python Course at the Weizmann Institute of Science (2025), under the guidance of [Gabor Szabo](https://https://github.com/szabgab).*
